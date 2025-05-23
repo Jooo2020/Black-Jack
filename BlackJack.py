@@ -99,7 +99,7 @@ class Dealer():
     def dealer_karten(self,liste:list):
         self.__dealer_deck = [liste[1],liste[3]] # dealer karten
         
-        #print(self.__dealer_deck[0].get_karten_wert()) # 1. karte des dealers aufdecken
+        print(self.__dealer_deck[0].get_karten_wert()) # 1. karte des dealers aufdecken
         #print(self.__dealer_deck[1].get_karten_wert())
         
         if self.__dealer_deck[0].get_karten_wert() + self.__dealer_deck[1].get_karten_wert() == 21: #schauen ob der dealer 21 auf der Hand hat 
@@ -196,8 +196,15 @@ def run_me():
         print("Hand2:", [karte.get_karten_wert() for karte in spieler1.hand2])
         
     elif eingabe == "hit":
-        spieler1.hit(karten_ls)
-        print("Spieler Deck", [karte.get_karten_wert() for karte in spieler1.spieler_deck])
+        while True:
+            if input("hit?") == "hit":
+                spieler1.hit(karten_ls)
+                print("Spieler Deck", [karte.get_karten_wert() for karte in spieler1.spieler_deck])
+                if sum([karte.get_karten_wert() for karte in spieler1.spieler_deck]) >21:
+                    print("Verloren")
+                    break
+            else:
+                break
         
     elif eingabe == "double":
         spieler1.double(karten_ls)
@@ -211,6 +218,7 @@ def run_me():
         print("die ausgewähle methode gibt es nicht")
         
     dealer1.hitting_dealer(karten_ls,spieler1)
+    print([karte.get_karten_wert() for karte in dealer1.get_dealer_deck])
 
     # Optional: show final hands
     
