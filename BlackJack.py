@@ -1,5 +1,29 @@
+#Philip
+import pygame
+import sys
+#für pygame
+
 import random
+
+
+
+# Initialisierung
+pygame.init()
+
+# Bildschirm erstellen
+screen = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("Mein erstes Pygame-Spiel")
+
+# Farben
+card = pygame.image.load(r"cards/ace_of_spades.png")
+card = pygame.transform.scale(card, (100, 150))  # Größe anpassen
+
+# Uhr für Framerate
+clock = pygame.time.Clock()
+
+
 # Johannes
+
 class Dealer():
     pass 
 
@@ -70,6 +94,7 @@ class Dealer():
         
         print(self.__dealer_deck[0]) # 1. karte des dealers aufdecken
 
+
         if self.__dealer_deck[0].get_karten_wert() + self.__dealer_deck[1].get_karten_wert() == 21: #schauen ob der dealer 21 auf der Hand hat 
             print("dealer hat gewonnen") 
 
@@ -127,7 +152,8 @@ class K(Zehner):
         
 class A(Karte):
     def __init__(self):
-        super().__init__((1,11))
+        super().__init__(11)
+        
         
 # Karten erstellen und mischen
 karten_ls = []
@@ -170,3 +196,25 @@ def run_me():
     spieler1.hit(karten_ls)
 
 run_me()
+
+# Spiel läuft
+running = True
+while running:
+    clock.tick(30)  # 30 FPS
+
+    # Events abfragen
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Bildschirm füllen
+    screen.fill((0, 120, 0))  # grüner Tisch
+    screen.blit(card, (100, 100))  # Karte anzeigen
+
+    # Bildschirm aktualisieren
+    pygame.display.flip()
+
+# Pygame beenden
+pygame.quit()
+sys.exit()
+
