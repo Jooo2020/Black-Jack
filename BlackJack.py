@@ -158,19 +158,19 @@ class Karte():
         
 class Zehn(Karte):
     def __init__(self,farbe):
-        super().__init__()
+        super().__init__(10,farbe)
 
 class J(Karte):
     def __init__(self,farbe):
-        super().__init__(farbe)
+        super().__init__(10,farbe)
 
 class Q(Karte):
     def __init__(self,farbe):
-        super().__init__(farbe)
+        super().__init__(10,farbe)
 
 class K(Karte):
     def __init__(self,farbe):
-        super().__init__(farbe)
+        super().__init__(10,farbe)
         
 class A(Karte):
     def __init__(self,farbe):
@@ -178,14 +178,26 @@ class A(Karte):
         
 # Karten erstellen und mischen
 karten_ls = []
-Bild = [["cards/ace_of_spades.png","cards/ace_of_spades.png"],[],[]]#2 dimensionalen liste [[2er],[3er]]
+Bild = [["cards/2_of_clubs.png","cards/2_of_diamonds.png","cards/2_of_hearts.png","cards/2_of_spades.png"],
+        ["cards/3_of_clubs.png","cards/3_of_diamonds.png","cards/3_of_hearts.png","cards/3_of_spades.png"],
+        ["cards/4_of_clubs.png","cards/4_of_diamonds.png","cards/4_of_hearts.png","cards/4_of_spades.png"],
+        ["cards/5_of_clubs.png","cards/5_of_diamonds.png","cards/5_of_hearts.png","cards/5_of_spades.png"],
+        ["cards/6_of_clubs.png","cards/6_of_diamonds.png","cards/6_of_hearts.png","cards/6_of_spades.png"],
+        ["cards/7_of_clubs.png","cards/7_of_diamonds.png","cards/7_of_hearts.png","cards/7_of_spades.png"],
+        ["cards/8_of_clubs.png","cards/8_of_diamonds.png","cards/8_of_hearts.png","cards/8_of_spades.png"],
+        ["cards/9_of_clubs.png","cards/9_of_diamonds.png","cards/9_of_hearts.png","cards/9_of_spades.png"],
+        ["cards/10_of_clubs.png","cards/10_of_diamonds.png","cards/10_of_hearts.png","cards/10_of_spades.png"],
+        ["cards/ace_of_clubs.png","cards/ace_of_diamonds.png","cards/ace_of_hearts.png","cards/ace_of_spades.png"],
+        ["cards/jack_of_clubs.png","cards/jack_of_diamonds.png","cards/jack_of_hearts.png","cards/jack_of_spades.png"],
+        ["cards/king_of_clubs.png","cards/king_of_diamonds.png","cards/king_of_hearts.png","cards/king_of_spades.png"],
+        ["cards/queen_of_clubs.png","cards/queen_of_diamonds.png","cards/queen_of_hearts.png","cards/queen_of_spades.png"]]#2 dimensionalen liste [[2er],[3er]]
 karten_bild = 0
 
 for kartenwert in range(2,11): # Karten von 2 bis 10
       
     for karten in range(4): #von jeder Karte 4 
         if kartenwert == 10:
-            karten_ls.extend([Zehn(Bild[8]), J(Bild[9]), Q(Bidl[10]), K(Bild[11]), A(Bidl[12])])     
+            karten_ls.extend([Zehn(Bild[8]), J(Bild[9]), Q(Bild[10]), K(Bild[11]), A(Bild[12])])     
                                
         else:  
             karte = Karte(kartenwert,Bild[karten_bild][karten])
