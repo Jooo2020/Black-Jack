@@ -1,6 +1,27 @@
-import random
+#Philip
+import pygame
 import sys
+#für pygame
+
+import random
+
+# Initialisierung
+pygame.init()
+
+# Bildschirm erstellena
+screen = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("Mein erstes Pygame-Spiel")
+
+# Farben
+card = pygame.image.load(r"cards/ace_of_spades.png")
+card = pygame.transform.scale(card, (100, 150))  # Größe anpassen
+
+# Uhr für Framerate
+clock = pygame.time.Clock()
+
+
 # Johannes
+
 class Dealer(): #für die spilerklasse das sie funktioniert, da die klasse spieler vor der klasse dealer defininiert worden ist 
     pass 
 
@@ -15,7 +36,6 @@ class Spieler():
         
     def spieler_karten(self,liste:list):
         self.spieler_deck = [liste[0],liste[2]] # spieler karten
-        
         if self.spieler_deck[0].get_karten_wert() + self.spieler_deck[1].get_karten_wert() == 21:#schauen ob der Spieler 21 auf der Hand hat 
             print("Spieler hat gewonnen")
             sys.exit()
@@ -43,11 +63,6 @@ class Spieler():
             self.hand1.append(self.spieler_deck[0])
             self.hand2.append(self.spieler_deck[1])
             
-            self.hand1.append(liste[0])
-            del liste[0]
-            
-            self.hand2.append(liste[0])
-            del liste[0]
             # noch für jede hand den aktuellen kartenstand angeben 
             wert1 = 0
             wert2 = 0
@@ -129,51 +144,53 @@ class Jetons():
     pass
 
 class Karte():
-    def __init__(self,wert):
+    def __init__(self,wert,farbe):
         self.__wert = wert
+        self.__farbe = farbe
         
     def get_karten_wert(self):
         return self.__wert
+           
+    def get_farbe(self):
+        return self.__farbe
     
+
         
-    
-class Zehner(Karte):
-    def __init__(self):
-        super().__init__(10)
-        
-class Zehn(Zehner):
-    def __init__(self):
+class Zehn(Karte):
+    def __init__(self,farbe):
         super().__init__()
 
-class J(Zehner):
-    def __init__(self):
-        super().__init__()
+class J(Karte):
+    def __init__(self,farbe):
+        super().__init__(farbe)
 
-class Q(Zehner):
-    def __init__(self):
-        super().__init__()
+class Q(Karte):
+    def __init__(self,farbe):
+        super().__init__(farbe)
 
-class K(Zehner):
-    def __init__(self):
-        super().__init__()
+class K(Karte):
+    def __init__(self,farbe):
+        super().__init__(farbe)
         
 class A(Karte):
-    def __init__(self):
-        super().__init__(11)
+    def __init__(self,farbe):
+        super().__init__(11,farbe)
         
 # Karten erstellen und mischen
 karten_ls = []
+Bild = [["cards/ace_of_spades.png","cards/ace_of_spades.png"],[],[]]#2 dimensionalen liste [[2er],[3er]]
+karten_bild = 0
 
-for kartenwert in range(2,11): # Karten von 2 bis 11
-    
-        for karten in range(4): #von jeder Karte 4 
-            if kartenwert == 10:
-                karten_ls.extend([Zehn(), J(), Q(), K(), A()])     
+for kartenwert in range(2,11): # Karten von 2 bis 10
+      
+    for karten in range(4): #von jeder Karte 4 
+        if kartenwert == 10:
+            karten_ls.extend([Zehn(Bild[8]), J(Bild[9]), Q(Bidl[10]), K(Bild[11]), A(Bidl[12])])     
                                
-            else:  
-                karte = Karte(kartenwert)
-                karten_ls.append(karte)
-                
+        else:  
+            karte = Karte(kartenwert,Bild[karten_bild][karten])
+            karten_ls.append(karte)
+    karten_bild +=1
                 
 random.shuffle(karten_ls) #mischeln
 
@@ -221,9 +238,29 @@ def run_me():
     print([karte.get_karten_wert() for karte in dealer1.get_dealer_deck])
 
     # Optional: show final hands
-    
 
-
-run_me()
 
 #für nächstes mal dealer ausgabe, hit ausgabe, zusammenführung mit gui, geldwert, hit mehrmals ausfüherne 
+run_me()
+
+# Spiel läuft
+running = True
+while running:
+    clock.tick(30)  # 30 FPS
+
+    # Events abfragen
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Bildschirm füllen
+    screen.fill((0, 120, 0))  # grüner Tisch
+    screen.blit(card, (100, 100))  # Karte anzeigen
+
+    # Bildschirm aktualisieren
+    pygame.display.flip()
+
+# Pygame beenden
+pygame.quit()
+sys.exit()
+
