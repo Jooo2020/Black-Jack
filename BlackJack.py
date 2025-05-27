@@ -153,8 +153,6 @@ class Karte():
            
     def get_farbe(self):
         return self.__farbe
-    
-
         
 class Zehn(Karte):
     def __init__(self,farbe):
@@ -273,6 +271,7 @@ while running:
     pygame.display.flip()
 
 # Pygame beenden
+
 pygame.quit()
 sys.exit()
 
