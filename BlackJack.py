@@ -43,6 +43,8 @@ class Dealer():
     def dealer_karten(self, liste: list):
         self.__dealer_deck = [liste[1], liste[3]]
         print(self.__dealer_deck[0].get_karten_wert())
+    
+        
         if sum([k.get_karten_wert() for k in self.__dealer_deck]) == 21:
             print("Dealer hat gewonnen")
 
@@ -63,42 +65,84 @@ class Dealer():
 class Spieler():
     def __init__(self, guthaben, einsatz):
         self.__guthaben = guthaben
-        self.spieler_deck = []
+        self.hands = [[]]
         self.einsatz = einsatz
-        self.hand1 = []
-        self.hand2 = []
-
+        self.active_hand_index = 0
+        
     def spieler_karten(self, liste: list):
-        self.spieler_deck = [liste[0], liste[2]]
-        if sum([k.get_karten_wert() for k in self.spieler_deck]) == 21:
-            print("Spieler hat Blackjack")
-            sys.exit()
+        self.hands = [[liste[0], liste[2]]]
+        print(self.hands)
+        
+        for hand in self.hands:
+            if sum([k.get_karten_wert() for k in hand]) == 21: #visualisierung mit schriftzug 
+                print("Spieler hat Blackjack")
 
     def hit(self, liste: list):
-        self.spieler_deck.append(liste[0])
-        del liste[0]
+        self.hands[self.active_hand_index].append(liste.pop(0))
+
 
     def double(self, liste: list):
+        
         if self.einsatz >= self.__guthaben:
             print("Nicht genug Geld")
         else:
+            self.__guthaben -= self.einsatz
             self.einsatz *= 2
             self.hit(liste)
-
-    def split(self, liste: list):
-        if self.spieler_deck[0].get_karten_wert() == self.spieler_deck[1].get_karten_wert():
+                
+    def split(self,liste:list):
+        aktuelle_hand = self.hands[self.active_hand_index]
+        if len(aktuelle_hand) == 2 and aktuelle_hand[0].get_karten_wert() == aktuelle_hand[1].get_karten_wert(): # ob nur 2 objekte in der hand sind und überprüft ob die beiden karten in gleichen wert 
             if self.einsatz * 2 > self.__guthaben:
+                self.__guthaben -= self.einsatz  # zweiter Einsatz
                 print("Nicht genügend Guthaben für Split")
-                return
-            self.__guthaben -= self.einsatz
-            self.hand1.append(self.spieler_deck[0])
-            self.hand2.append(self.spieler_deck[1])
-            print("Split durchgeführt")
+                
+            karte1 = aktuelle_hand[0]
+            karte2 = aktuelle_hand[1]
+
+            self.hands[self.active_hand_index] = [karte1, liste.pop(0)]
+
+            # Neue Hand erstellen mit anderer Karte + neue vom Stapel
+            neue_hand = [karte2, liste.pop(0)]
+            self.hands.append(neue_hand)
+            
+            buttons = [["Hit", 100, 500, 100, 40, screen, self.split_hit(liste)],
+                    ["Stand", 210, 500, 100, 40, screen, self.stand],
+                    ["Double", 320, 500, 100, 40, screen, self.double(liste)],
+                    ["Hit", 430, 500, 100, 40, lambda: self.split_hit(liste)]]
+            
+            for knopf in buttons:
+                button( *knopf)
+            
+            # noch für jede hand den aktuellen kartenstand angeben 
+            for hand in self.hands:
+                wert = sum([karte.get_karten_wert() for karte in hand])
+                print(f"Wert Hand{self.active_hand_index}:", wert)
+
+                if wert > 21:
+                    print(f"hand{self.active_hand_index} Verloren")
+                    break_loop[0] = True
+                    
+                elif spieler1.stand():
+                    break_loop[0] = True
+                
         else:
             print("Split nicht möglich")
-
+            
+            
+    def split_hit(self,liste:list):
+        self.hands.append(liste[0])
+        del liste[0]
+        
+        
     def stand(self):
-        return self.spieler_deck
+        if self.active_hand_index + 1 < len(self.hands):
+            self.active_hand_index += 1
+            print(f"Wechsel zu Hand {self.active_hand_index}")
+            return False  # noch Hände offen
+        else:
+            print("Alle Hände gespielt")
+            return True  # alle Hände durch
 
 
 class Karte():
@@ -111,6 +155,7 @@ class Karte():
 
     def get_farbe(self):
         return self.__farbe
+    
         
 class Zehn(Karte):
     def __init__(self, farbe): 
@@ -155,7 +200,7 @@ Bild = [["cards/2_of_clubs.png","cards/2_of_diamonds.png","cards/2_of_hearts.png
 
 karten_bild = 0
 
-for kartenwert in range(2, 11):
+for kartenwert in range(10, 11):
     for karten in range(4):
         if kartenwert == 10:
             karten_ls.extend([Zehn(Bild[8][karten]), J(Bild[10][karten]), Q(Bild[12][karten]), K(Bild[11][karten]), A(Bild[9][karten])])
@@ -172,46 +217,82 @@ spieler1 = Spieler(1000, 100)
 
 dealer1.dealer_karten(karten_ls)
 spieler1.spieler_karten(karten_ls)
-print("Spielerhand:", [k.get_karten_wert() for k in spieler1.spieler_deck])
+
+for hand in spieler1.hands:
+    karte = [k.get_karten_wert() for k in hand]
+print("Spielerhand:", karte)
+    
 
 # Button-Aktionen
 break_loop = [False]
+#Auswertung muss auch visualisiert werden 
+def auswertung():
+    for hand in spieler1.hands:
+        karte = [k.get_karten_wert() for k in hand]
+        print("Spielerhand: ", karte)
+        
+        if sum([k.get_karten_wert() for k in hand]) > 21:
+            print("Verloren")
+            break_loop[0] = True
 
 def hit(): 
     spieler1.hit(karten_ls)
-    print("Spielerhand:", [k.get_karten_wert() for k in spieler1.spieler_deck])
-    if sum([k.get_karten_wert() for k in spieler1.spieler_deck]) > 21:
-        print("Verloren")
-        break_loop[0] = True
+    deck =[]
+    print(spieler1.hands)
+    auswertung()
 
+        
 def stand(): 
-    print("Spieler steht")
-    break_loop[0] = True
+    if spieler1.stand():
+        auswertung()
+        break_loop[0] = True
+    else:
+        print("Nächste Hand aktiv")
 
-def double(): 
-    spieler1.double(karten_ls)
-    print("Double ausgeführt")
-    break_loop[0] = True
+    
+
+
+def double():
+    if len(spieler1.hands[spieler1.active_hand_index]) == 2:
+        spieler1.double(karten_ls)
+        auswertung()
+        break_loop[0] = True
+        
+    else:
+        print("Doubln nicht möglich")
+    
+    
+
 
 def split(): 
     spieler1.split(karten_ls)
 
+        
+        
 # Spiel-Schleife mit Buttons
+buttons = [["Hit", 100, 500, 100, 40, screen, hit],
+        ["Stand", 210, 500, 100, 40, screen, stand],
+        ["Double", 320, 500, 100, 40, screen, double],
+        ["Split", 430, 500, 100, 40, screen, split]]
+
+for knopf in buttons:
+        button( *knopf)
+
+
 while not break_loop[0]:
-    screen.fill((0, 120, 0))
-
-    button("Hit", 100, 500, 100, 40, screen, hit)
-    button("Stand", 210, 500, 100, 40, screen, stand)
-    button("Double", 320, 500, 100, 40, screen, double)
-    button("Split", 430, 500, 100, 40, screen, split)
-
+    screen.fill((0, 120, 0))  
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
+
+    # Buttons zeichnen und Aktionen prüfen
+    for knopf in buttons:
+        button(*knopf)
     pygame.display.flip()
     clock.tick(30)
+
 
 # Nach Stand oder Verlust → Dealer spielt
 dealer1.hitting_dealer(karten_ls, spieler1)
