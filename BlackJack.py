@@ -76,6 +76,7 @@ class Spieler():
         for hand in self.hands:
             if sum([k.get_karten_wert() for k in hand]) == 21: #visualisierung mit schriftzug 
                 print("Spieler hat Blackjack")
+                sys.exit()
 
     def hit(self, liste: list):
         self.hands[self.active_hand_index].append(liste.pop(0))
@@ -100,20 +101,19 @@ class Spieler():
             karte1 = aktuelle_hand[0]
             karte2 = aktuelle_hand[1]
 
+
             self.hands[self.active_hand_index] = [karte1, liste.pop(0)]
 
             # Neue Hand erstellen mit anderer Karte + neue vom Stapel
             neue_hand = [karte2, liste.pop(0)]
             self.hands.append(neue_hand)
             
-            buttons = [["Hit", 100, 500, 100, 40, screen, self.split_hit(liste)],
-                    ["Stand", 210, 500, 100, 40, screen, self.stand],
-                    ["Double", 320, 500, 100, 40, screen, self.double(liste)],
-                    ["Hit", 430, 500, 100, 40, lambda: self.split_hit(liste)]]
+            buttons = [["Hit", 100, 500, 100, 40, screen,lambda: self.split_hit(liste)],
+                    ["Stand", 210, 500, 100, 40, screen,lambda: self.stand],
+                    ["Double", 320, 500, 100, 40, screen,lambda: self.double(liste)],
+                    ["Hit", 430, 500, 100, 40, lambda: self.split(liste)]]
             
-            for knopf in buttons:
-                button( *knopf)
-            
+                   
             # noch für jede hand den aktuellen kartenstand angeben 
             for hand in self.hands:
                 wert = sum([karte.get_karten_wert() for karte in hand])
@@ -131,8 +131,8 @@ class Spieler():
             
             
     def split_hit(self,liste:list):
-        self.hands.append(liste[0])
-        del liste[0]
+        self.hands[self.active_hand_index].append(liste.pop(0))
+
         
         
     def stand(self):
@@ -275,8 +275,7 @@ buttons = [["Hit", 100, 500, 100, 40, screen, hit],
         ["Double", 320, 500, 100, 40, screen, double],
         ["Split", 430, 500, 100, 40, screen, split]]
 
-for knopf in buttons:
-        button( *knopf)
+
 
 
 while not break_loop[0]:
@@ -286,6 +285,8 @@ while not break_loop[0]:
             pygame.quit()
             sys.exit()
 
+    for knopf in buttons:
+        button( *knopf)
 
     # Buttons zeichnen und Aktionen prüfen
     for knopf in buttons:
