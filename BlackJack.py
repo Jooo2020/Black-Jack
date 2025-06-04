@@ -101,30 +101,42 @@ class Spieler():
             karte1 = aktuelle_hand[0]
             karte2 = aktuelle_hand[1]
 
-
+            #auf beide gesplittene karten flogt eine neue karte
             self.hands[self.active_hand_index] = [karte1, liste.pop(0)]
 
             # Neue Hand erstellen mit anderer Karte + neue vom Stapel
             neue_hand = [karte2, liste.pop(0)]
+            
             self.hands.append(neue_hand)
             
-            buttons = [["Hit", 100, 500, 100, 40, screen,lambda: self.split_hit(liste)],
-                    ["Stand", 210, 500, 100, 40, screen,lambda: self.stand],
-                    ["Double", 320, 500, 100, 40, screen,lambda: self.double(liste)],
-                    ["Hit", 430, 500, 100, 40, lambda: self.split(liste)]]
+            
+            
             
                    
             # noch für jede hand den aktuellen kartenstand angeben 
+            hand_index = 0
             for hand in self.hands:
+                hand_index +=1
                 wert = sum([karte.get_karten_wert() for karte in hand])
-                print(f"Wert Hand{self.active_hand_index}:", wert)
+                print(f"Wert Hand{hand_index}:", self.hands[hand_index][0].get_wert,self.hands[hand_index][1].get_wert)
 
                 if wert > 21:
-                    print(f"hand{self.active_hand_index} Verloren")
-                    break_loop[0] = True
+                    for karte in hand:
+                        if isinstance(karte, A):
+                            karte.set_karten_wert()
                     
-                elif spieler1.stand():
-                    break_loop[0] = True
+                    if wert >21:
+                        print(f"hand{self.active_hand_index} Verloren")
+                        break_loop[0] = True
+                    
+                   
+                    
+                    
+                else:
+                    buttons = [["Hit", 100, 500, 100, 40, screen,lambda: self.split_hit(liste)],
+                    ["Stand", 210, 500, 100, 40, screen,lambda: self.stand()],
+                    ["Double", 320, 500, 100, 40, screen,lambda: self.double(liste)],
+                    ["Split", 430, 500, 100, 40, screen,lambda: self.split(liste)]]
                 
         else:
             print("Split nicht möglich")
@@ -180,6 +192,9 @@ class K(Karte):
 class A(Karte):
     def __init__(self, farbe): 
         super().__init__(11, farbe)
+        
+    def set_karten_wert(self):
+        super().__init__(1)
 
 
 # Karten erstellen
@@ -200,7 +215,7 @@ Bild = [["cards/2_of_clubs.png","cards/2_of_diamonds.png","cards/2_of_hearts.png
 
 karten_bild = 0
 
-for kartenwert in range(10, 11):
+for kartenwert in range(2, 11):
     for karten in range(4):
         if kartenwert == 10:
             karten_ls.extend([Zehn(Bild[8][karten]), J(Bild[10][karten]), Q(Bild[12][karten]), K(Bild[11][karten]), A(Bild[9][karten])])
@@ -232,13 +247,18 @@ def auswertung():
         print("Spielerhand: ", karte)
         
         if sum([k.get_karten_wert() for k in hand]) > 21:
+            for karte in hand:
+                if isinstance(karte, A):
+                    karte.set_karten_wert()
+
             print("Verloren")
             break_loop[0] = True
 
 def hit(): 
     spieler1.hit(karten_ls)
-    deck =[]
-    print(spieler1.hands)
+    print("Aktive Hand:", spieler1.active_hand_index)
+    for idx, hand in enumerate(spieler1.hands):
+        print(f"Hand {idx}: {[k.get_karten_wert() for k in hand]}")
     auswertung()
 
         
@@ -285,8 +305,6 @@ while not break_loop[0]:
             pygame.quit()
             sys.exit()
 
-    for knopf in buttons:
-        button( *knopf)
 
     # Buttons zeichnen und Aktionen prüfen
     for knopf in buttons:
