@@ -2,6 +2,13 @@ import pygame
 import sys
 import random
 
+def zeichne_hand(screen, hand, pos_x, pos_y):
+    abstand = 60  # Abstand zwischen Karten horizontal
+    karte_breite, karte_hoehe = 80, 120
+    for i, karte in enumerate(hand):
+        karte_bild = karte.get_image()
+        screen.blit(karte_bild, (pos_x + i * abstand, pos_y))
+
 # Initialisierung
 pygame.init()
 
@@ -12,9 +19,7 @@ pygame.display.set_caption("Blackjack")
 # Font
 FONT = pygame.font.SysFont("Arial", 20)
 
-# Karte zum Testen anzeigen
-card = pygame.image.load(r"cards/ace_of_spades.png")
-card = pygame.transform.scale(card, (100, 150))  # Größe anpassen
+
 
 # Uhr für Framerate
 clock = pygame.time.Clock()
@@ -43,6 +48,7 @@ class Dealer():
     def dealer_karten(self, liste: list):
         self.__dealer_deck = [liste[1], liste[3]]
         print(self.__dealer_deck[0].get_karten_wert())
+    
     
         
         if sum([k.get_karten_wert() for k in self.__dealer_deck]) == 21:
@@ -149,6 +155,7 @@ class Karte():
     def __init__(self, wert, farbe):
         self.__wert = wert
         self.__farbe = farbe
+        self.image = pygame.image.load(farbe).convert_alpha()
 
     def get_karten_wert(self):
         return self.__wert
@@ -156,6 +163,12 @@ class Karte():
     def get_farbe(self):
         return self.__farbe
     
+    def get_image(self):
+        bild = pygame.image.load(self.__farbe).convert_alpha()
+        bild = pygame.transform.smoothscale(bild, (80, 120))
+        return bild
+
+
         
 class Zehn(Karte):
     def __init__(self, farbe): 
@@ -200,7 +213,7 @@ Bild = [["cards/2_of_clubs.png","cards/2_of_diamonds.png","cards/2_of_hearts.png
 
 karten_bild = 0
 
-for kartenwert in range(10, 11):
+for kartenwert in range(2, 11):
     for karten in range(4):
         if kartenwert == 10:
             karten_ls.extend([Zehn(Bild[8][karten]), J(Bild[10][karten]), Q(Bild[12][karten]), K(Bild[11][karten]), A(Bild[9][karten])])
@@ -279,20 +292,35 @@ buttons = [["Hit", 100, 500, 100, 40, screen, hit],
 
 
 while not break_loop[0]:
-    screen.fill((0, 120, 0))  
+    screen.fill((0, 120, 0))  # Grüner Hintergrund
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+            for knopf in buttons:
+                x, y, w, h = knopf[1], knopf[2], knopf[3], knopf[4]
+                if pygame.Rect(x, y, w, h).collidepoint(mouse_pos):
+                    action = knopf[6]
+                    if action:
+                        action()
 
-    for knopf in buttons:
-        button( *knopf)
+    # Dealer-Karten offen anzeigen
+    zeichne_hand(screen, dealer1.get_dealer_deck(), 100, 50)
 
-    # Buttons zeichnen und Aktionen prüfen
+    # Spieler-Karten anzeigen (jede Hand untereinander)
+    for i, hand in enumerate(spieler1.hands):
+        zeichne_hand(screen, hand, 100, 300 + i * 100)
+
+    # Buttons zeichnen
     for knopf in buttons:
         button(*knopf)
+
     pygame.display.flip()
     clock.tick(30)
+
 
 
 # Nach Stand oder Verlust → Dealer spielt
