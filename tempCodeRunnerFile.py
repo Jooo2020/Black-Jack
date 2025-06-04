@@ -1,1 +1,2 @@
-spieler1
+    else:                    
+                prin
