@@ -17,10 +17,9 @@ pygame.init()
 screen = pygame.display.set_mode((800, 600))
 pygame.display.set_caption("Blackjack")
 
+backside_image = pygame.transform.smoothscale(pygame.image.load("cards/backside.png").convert_alpha(), (80, 120))
 # Font
 FONT = pygame.font.SysFont("Arial", 20)
-
-
 
 # Uhr für Framerate
 clock = pygame.time.Clock()
@@ -36,43 +35,37 @@ def button(text, x, y, w, h, screen, action=None):
     text_surface = FONT.render(text, True, (255, 255, 255))
     screen.blit(text_surface, (x + 10, y + 10))
 
-
-
-
 # Klassen
 class Dealer():
     def __init__(self):
         self.__dealer_deck = []
-        
 
     def dealer_karten(self):
         self.__dealer_deck = [karten_ls[1], karten_ls[3]]
-        
+
         wert = berechne_hand_wert(self.__dealer_deck)
         if wert == 21:
             print("Dealer hat gewonnen")
             sys.exit()
-            
+
     def hitting_dealer(self):
         wert = berechne_hand_wert(self.__dealer_deck)
         if wert < 17:
             self.__dealer_deck.append(karten_ls[0])
             del karten_ls[0]
             return self.hitting_dealer()
-            
-            
+
         elif wert > 21:
             print("Dealer verloren")
             return self.__dealer_deck
-            
+
         else:
             return self.__dealer_deck
-        
+
         time.sleep(1)
 
     def get_dealer_deck(self):
         return self.__dealer_deck
-
 
 class Spieler():
     def __init__(self, guthaben, einsatz):
@@ -80,10 +73,10 @@ class Spieler():
         self.hands = [[]]
         self.einsatz = einsatz
         self.active_hand_index = 0
-        
+
     def spieler_karten(self):
         self.hands = [[karten_ls[0], karten_ls[2]]]
-        
+
         wert = berechne_hand_wert(self.hands[0])
         if wert == 21: #visualisierung mit schriftzug 
             print("Spieler hat Blackjack")
@@ -92,90 +85,64 @@ class Spieler():
     def hit(self):
         self.hands[self.active_hand_index].append(karten_ls.pop(0))
 
-
     def double(self):
-        
         if self.einsatz >= self.__guthaben:
             print("Nicht genug Geld")
         else:
             self.__guthaben -= self.einsatz
             self.einsatz *= 2
             self.hit()
-                
+
     def split(self):
         aktuelle_hand = self.hands[self.active_hand_index]
-        if len(aktuelle_hand) == 2 and aktuelle_hand[0].get_karten_wert() == aktuelle_hand[1].get_karten_wert(): # ob nur 2 objekte in der hand sind und überprüft ob die beiden karten in gleichen wert 
+        if len(aktuelle_hand) == 2 and aktuelle_hand[0].get_karten_wert() == aktuelle_hand[1].get_karten_wert():
             if self.einsatz * 2 > self.__guthaben:
                 self.__guthaben -= self.einsatz  # zweiter Einsatz
                 print("Nicht genügend Guthaben für Split")
-                
+
             karte1 = aktuelle_hand[0]
             karte2 = aktuelle_hand[1]
 
-            #auf beide gesplittene karten flogt eine neue karte
+            # Auf beide gesplittene karten folgt eine neue karte
             self.hands[self.active_hand_index] = [karte1, karten_ls.pop(0)]
 
             # Neue Hand erstellen mit anderer Karte + neue vom Stapel
             neue_hand = [karte2, karten_ls.pop(0)]
-            
+
             self.hands.append(neue_hand)
-            
-            
-            
-            
-                   
+
             # noch für jede hand den aktuellen kartenstand angeben 
-            for hand_index,hand in enumerate (self.hands):
+            for hand_index,hand in enumerate(self.hands):
                 wert = berechne_hand_wert(hand)
-                print(f"Wert Hand{hand_index}:", self.hands[hand_index][0].get_karten_wert(),self.hands[hand_index][1].get_karten_wert())
-                
+                print(f"Wert Hand{hand_index}:", self.hands[hand_index][0].get_karten_wert(), self.hands[hand_index][1].get_karten_wert())
+
                 if wert > 21:
                     print(f"hand{self.active_hand_index} Verloren")
                     break_loop[0] = True
-                    
-                elif wert ==21:
+
+                elif wert == 21:
                     self.stand()
-                     
+
                 else:
                     buttons = [["Hit", 100, 500, 100, 40, screen,lambda: self.hit()],
                     ["Stand", 210, 500, 100, 40, screen,lambda: self.stand()],
                     ["Double", 320, 500, 100, 40, screen,lambda: self.double()],
                     ["Split", 430, 500, 100, 40, screen,lambda: self.split()]]
-                
+
         else:
             print("Split nicht möglich")
-            
-        
-        
+
     def stand(self):
+        global dealer_zeigt_zweite_karte
+
         if self.active_hand_index + 1 < len(self.hands):
             self.active_hand_index += 1
             print(f"Wechsel zu Hand {self.active_hand_index}")
             return False  # noch Hände offen
-        
         else:
-            print("Alle Hände gespielt")
-           # alle Hände durch
-            dealer_deck = dealer1.hitting_dealer()
-            dealer_wert = berechne_hand_wert(dealer_deck)
-            
-            print("Dealerhand:", [k.get_karten_wert() for k in dealer1.get_dealer_deck()])
-            
-            
-            for hand in spieler1.hands:
-                hand_wert = berechne_hand_wert(hand) 
-                if hand_wert > dealer_wert and hand_wert <= 21 and dealer_wert <=21:
-                    print(f"Hand{self.active_hand_index}: gewonnen")
-                    self.__guthaben += 2*self.einsatz
-                
-                elif hand_wert < dealer_wert and dealer_wert <=21 and hand_wert <=21:
-                    print(f"Hand{self.active_hand_index}: verloren")
-                    
-                elif hand_wert == dealer_wert and hand_wert <=21:
-                    print(f"Draw")
-                    self.__guthaben += self.einsatz
-                    
-            return True
+            dealer_zeigt_zweite_karte = True
+            auswertung()
+            return True  # alle Hände gespielt
 
 class Karte():
     def __init__(self, wert, farbe):
@@ -188,37 +155,29 @@ class Karte():
 
     def get_farbe(self):
         return self.__farbe
-    
+
     def get_image(self):
         return self.__image
 
-
-        
 class Zehn(Karte):
     def __init__(self, farbe): 
         super().__init__(10, farbe)
-
 
 class J(Karte):
     def __init__(self, farbe): 
         super().__init__(10, farbe)
 
-
 class Q(Karte):
     def __init__(self, farbe): 
         super().__init__(10, farbe)
-
 
 class K(Karte):
     def __init__(self, farbe): 
         super().__init__(10, farbe)
 
-
 class A(Karte):
     def __init__(self, farbe): 
         super().__init__(11, farbe)
-        
-
 
 # Karten erstellen
 karten_ls = []
@@ -249,14 +208,11 @@ for kartenwert in range(2, 11):
 
 random.shuffle(karten_ls)
 
-
 # Button-Aktionen
-
-
 def berechne_hand_wert(hand):
     wert = sum([karte.get_karten_wert() for karte in hand])
     anzahl_asse = sum(1 for karte in hand if isinstance(karte, A))
-    
+
     while wert > 21 and anzahl_asse > 0:
         wert -= 10
         anzahl_asse -= 1
@@ -267,15 +223,15 @@ def auswertung():
     for idx, hand in enumerate(spieler1.hands):
         wert = berechne_hand_wert(hand)
         print(f"Hand {idx}: {[k.get_karten_wert() for k in hand]}")
-        
+
         if wert > 21:
             if spieler1.active_hand_index+1 == len(spieler1.hands):
                 if spieler1.active_hand_index == 0:
                     print(f"Deck Verloren")
-                
+
                 else:
                     break_loop[0]
-                    
+
             else:                    
                 print(f"Hand{idx} Verloren")
                 spieler1.stand()
@@ -284,28 +240,19 @@ def hit():
     spieler1.hit()
     auswertung()
 
-        
 def stand(): 
-     
-    if spieler1.stand():  
+    if spieler1.stand():
         auswertung()
     else:
         print(f"Hand{spieler1.active_hand_index} aktiv")
-
-    
-
 
 def double():
     if len(spieler1.hands[spieler1.active_hand_index]) == 2:
         spieler1.double()
         auswertung()
         break_loop[0] = True
-        
     else:
         print("Doubln nicht möglich")
-    
-    
-
 
 def split(): 
     spieler1.split()
@@ -313,20 +260,18 @@ def split():
 # Spielobjekte
 dealer1 = Dealer()
 spieler1 = Spieler(1000, 100)
+dealer_zeigt_zweite_karte = False  # Flag, ob zweite Dealer-Karte gezeigt wird
 
 dealer1.dealer_karten()
 spieler1.spieler_karten()
 
 break_loop = [False]
-#Auswertung muss auch visualisiert werden 
-        
+
 # Spiel-Schleife mit Buttons
 buttons = [["Hit", 100, 500, 100, 40, screen, hit],
-        ["Stand", 210, 500, 100, 40, screen, stand],
-        ["Double", 320, 500, 100, 40, screen, double],
-        ["Split", 430, 500, 100, 40, screen, split]]
-
-
+           ["Stand", 210, 500, 100, 40, screen, stand],
+           ["Double", 320, 500, 100, 40, screen, double],
+           ["Split", 430, 500, 100, 40, screen, split]]
 
 auswertung()
 while not break_loop[0]:
@@ -346,7 +291,16 @@ while not break_loop[0]:
                         action()
 
     # Dealer-Karten offen anzeigen
-    zeichne_hand(screen, dealer1.get_dealer_deck(), 100, 50)#zeigt aktuell alle dealer karten an, am Anfang nur di eerste Karte anzeigen 
+    if not dealer_zeigt_zweite_karte:
+        # Erste Karte offen anzeigen
+        screen.blit(dealer1.get_dealer_deck()[0].get_image(), (100, 50))
+
+        # Zweite Karte verdeckt (blaues Rechteck)
+        screen.blit(backside_image, (160, 50))
+
+    else:
+        # Alle Karten anzeigen
+        zeichne_hand(screen, dealer1.get_dealer_deck(), 100, 50)
 
     # Spieler-Karten anzeigen (jede Hand untereinander)
     for i, hand in enumerate(spieler1.hands):
@@ -359,10 +313,6 @@ while not break_loop[0]:
     pygame.display.flip()
     clock.tick(30)
 
-
-
-
 # Pygame beenden
 time.sleep(1)
 pygame.quit()
-
