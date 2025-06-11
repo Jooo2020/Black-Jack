@@ -15,6 +15,7 @@ def zeichne_hand(screen, hand, pos_x, pos_y):
 
 # Initialisierung
 pygame.init()
+status_message = ""
 
 # Bildschirm erstellen
 screen = pygame.display.set_mode((1500, 750))
@@ -67,7 +68,7 @@ class Dealer():
         wert = berechne_hand_wert(self.__dealer_deck) # funktion welche den Wert der Hand zurückgibt
         
         if wert == 21: 
-            print("Dealer hat gewonnen")
+            set_status_message("Dealer hat gewonnen")
 
     def hitting_dealer(self): #Wenn spieler alle seine Hände gespielt hat wird diese Methode aufgerufen um die Dealer hand zu vervolsständigen 
         wert = berechne_hand_wert(self.__dealer_deck) 
@@ -79,7 +80,7 @@ class Dealer():
             return self.hitting_dealer() 
 
         elif wert > 21: #wenn wert >21 hat der Spieler gewonnen falls seine Hand auch nicht über 21 hat 
-            print("Spieler hat gewonnen")
+            set_status_message("Spieler hat gewonnen")
             return self.__dealer_deck
 
         else:
@@ -104,7 +105,7 @@ class Spieler():
         
         wert = berechne_hand_wert(self.hands[0])
         if wert == 21: 
-            print("Spieler hat Blackjack")
+            set_status_message("Spieler hat Blackjack")
 
 
     def hit(self):
@@ -144,7 +145,7 @@ class Spieler():
                 print(f"Wert Hand{hand_index}:", self.hands[hand_index][0].get_karten_wert(), self.hands[hand_index][1].get_karten_wert())
 
                 if wert > 21:
-                    print(f"hand{self.active_hand_index} Verloren")
+                    set_status_message(f"hand{self.active_hand_index} Verloren")
                     #muss abgebrochen werden,aber nicht break_loop[0] = True
 
                 elif wert == 21:
@@ -179,14 +180,14 @@ class Spieler():
             for hand in spieler1.hands:
                 hand_wert = berechne_hand_wert(hand) 
                 if hand_wert > dealer_wert and hand_wert <= 21 and dealer_wert <=21:
-                    print(f"Hand{self.active_hand_index}: gewonnen")
+                    set_status_message(f"Hand{self.active_hand_index}: gewonnen")
                     self.__guthaben += 2*self.einsatz
                 
                 elif hand_wert < dealer_wert and dealer_wert <=21 and hand_wert <=21:
-                    print(f"Hand{self.active_hand_index}: verloren")
+                    set_status_message(f"Hand{self.active_hand_index}: verloren")
                     
                 elif hand_wert == dealer_wert and hand_wert <=21:
-                    print(f"Draw")
+                    set_status_message(f"Draw")
                     self.__guthaben += self.einsatz
                     
             return True
@@ -278,13 +279,13 @@ def deck_auswertung():
                     btn.active = False
                 
                 if spieler1.active_hand_index == 0:
-                    print(f"Spieler hat Verloren")
+                    set_status_message(f"Deck Verloren")
 
                 else:
                     break_loop[0]
 
             else:                    
-                print(f"Hand{idx} Verloren")
+                set_status_message(f"Hand{idx} Verloren")
                 spieler1.stand()
 
 def hit(): 
@@ -311,6 +312,38 @@ def double():
 def split(): 
     spieler1.split()
 
+def set_status_message(text):
+    global status_message
+    status_message = text
+
+def restart_game():
+    global spieler1, dealer1, karten_ls, break_loop, dealer_zeigt_zweite_karte,status_message
+    status_message = ""
+
+    # Karten neu generieren
+    karten_ls.clear()
+    karten_bild = 0
+    for kartenwert in range(2, 11):
+        for karten in range(0, 4):
+            if kartenwert == 10:
+                karten_ls.extend([Zehn(Bild[8][karten]), J(Bild[10][karten]), Q(Bild[12][karten]), K(Bild[11][karten]), A(Bild[9][karten])])
+            else:
+                karte = Karte(kartenwert, Bild[karten_bild][karten])
+                karten_ls.append(karte)
+        karten_bild += 1
+
+    random.shuffle(karten_ls)
+
+    # Spielobjekte neu erstellen
+    dealer1 = Dealer()
+    spieler1 = Spieler(1000, 100)
+    dealer_zeigt_zweite_karte = False
+    break_loop[0] = False
+
+    dealer1.dealer_karten()
+    spieler1.spieler_karten()
+    print("Spiel wurde neu gestartet")
+
 # Spielobjekte
 dealer1 = Dealer()
 spieler1 = Spieler(1000, 100)
@@ -326,11 +359,15 @@ buttons = [
     Button("Hit", 100, 500, 100, 40, hit),
     Button("Stand", 210, 500, 100, 40, stand),
     Button("Double", 320, 500, 100, 40, double),
-    Button("Split", 430, 500, 100, 40, split)
+    Button("Split", 430, 500, 100, 40, split),
+    Button("Restart", 540, 500, 100, 40, restart_game)
+
 ]
 
 
 deck_auswertung()
+
+
 while not break_loop[0]: #Läuft, bis break_loop[0] True wird
     screen.fill((0, 120, 0))
 
@@ -361,6 +398,11 @@ while not break_loop[0]: #Läuft, bis break_loop[0] True wird
     # Buttons zeichnen
     for btn in buttons:
         btn.draw(screen)
+
+    if status_message != "":
+        text_surf = FONT.render(status_message, True, (255, 255, 255))
+        screen.blit(text_surf, (100, 450))
+
 
     pygame.display.flip()
     clock.tick(30)
