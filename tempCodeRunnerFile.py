@@ -1,1 +1,1 @@
-dealer_zeigt_zweite_karte
+hitting_dealer

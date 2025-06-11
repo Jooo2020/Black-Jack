@@ -1,8 +1,11 @@
+#Bibliothek importieren
 import pygame
 import sys
 import random
 import time
 
+
+#Darstellung für die Karten(Philip)
 def zeichne_hand(screen, hand, pos_x, pos_y):
     abstand = 60  # Abstand zwischen Karten horizontal
     karte_breite, karte_hoehe = 80, 120
@@ -24,11 +27,11 @@ FONT = pygame.font.SysFont("Arial", 20)
 # Uhr für Framerate
 clock = pygame.time.Clock()
 
-# Button-Funktion
+# Button Klasse (Johannes)
 class Button:
-    def __init__(self, text, x, y, w, h, action=None, active=True):
+    def __init__(self, text, x, y, w, h, action=None, active=True): #übergabe Parameter (text = Text,x,y = positionierung, w,h = Dimensionen,action = none falls ein Button keine funktion übergibt, active = ob button gedrükt werden kann oder nicht)
         self.text = text
-        self.rect = pygame.Rect(x, y, w, h)
+        self.rect = pygame.Rect(x, y, w, h) #
         self.action = action
         self.active = active
 
@@ -53,67 +56,69 @@ class Button:
 # Klassen
 class Dealer():
     def __init__(self):
-        self.__dealer_deck = []
+        self.__dealer_deck = [] 
 
     def dealer_karten(self):
-        self.__dealer_deck = [karten_ls[1], karten_ls[3]]
+        self.__dealer_deck = [karten_ls[1], karten_ls[3]] #gitb dem Dealer die 2te und 4te Karte 
         
-        karten_ls.pop(1)
-        karten_ls.pop(2)
+        karten_ls.pop(1) 
+        karten_ls.pop(2) 
         
-        wert = berechne_hand_wert(self.__dealer_deck)
-        if wert == 21:
+        wert = berechne_hand_wert(self.__dealer_deck) # funktion welche den Wert der Hand zurückgibt
+        
+        if wert == 21: 
             print("Dealer hat gewonnen")
-            sys.exit()
 
-    def hitting_dealer(self):
-        wert = berechne_hand_wert(self.__dealer_deck)
+    def hitting_dealer(self): #Wenn spieler alle seine Hände gespielt hat wird diese Methode aufgerufen um die Dealer hand zu vervolsständigen 
+        wert = berechne_hand_wert(self.__dealer_deck) 
+        
         if wert < 17:
-            self.__dealer_deck.append(karten_ls[0])
-            del karten_ls[0]
-            return self.hitting_dealer()
+            self.__dealer_deck.append(karten_ls[0]) 
+            karten_ls.pop(0)
+            time.sleep(1.5) 
+            return self.hitting_dealer() 
 
-        elif wert > 21:
-            print("Dealer verloren")
+        elif wert > 21: #wenn wert >21 hat der Spieler gewonnen falls seine Hand auch nicht über 21 hat 
+            print("Spieler hat gewonnen")
             return self.__dealer_deck
 
         else:
             return self.__dealer_deck
 
-        time.sleep(1)
 
     def get_dealer_deck(self):
         return self.__dealer_deck
 
 class Spieler():
     def __init__(self, guthaben, einsatz):
-        self.__guthaben = guthaben
-        self.hands = [[]]
-        self.einsatz = einsatz
+        self.__guthaben = guthaben #guthaben noch nicht eingebaut(keine funktion) für erweiterung 
+        self.hands = []
+        self.einsatz = einsatz #einsatz noch nicht eingebaut(keine funktion) für erweiterung
         self.active_hand_index = 0
         
         
     def spieler_karten(self):
-        self.hands = [[karten_ls[0], karten_ls[2]]]
+        self.hands = [[karten_ls[0], karten_ls[2]]] #spieler bekommt 1. und 3. Karte
         karten_ls.pop(0)
         karten_ls.pop(1)
         
         wert = berechne_hand_wert(self.hands[0])
-        if wert == 21: #visualisierung mit schriftzug 
+        if wert == 21: 
             print("Spieler hat Blackjack")
-            sys.exit()
+
 
     def hit(self):
-        self.hands[self.active_hand_index].append(karten_ls.pop(0))
+        self.hands[self.active_hand_index].append(karten_ls.pop(0)) #an der activen Hand(falls gesplittet) wird eine neue Karte hinzugefügt
         
 
     def double(self):
-        if self.einsatz >= self.__guthaben:
+        if self.einsatz >= self.__guthaben: #falls einsatz hinzugefügt wird
             print("Nicht genug Geld")
         else:
-            self.__guthaben -= self.einsatz
-            self.einsatz *= 2
+            self.__guthaben -= self.einsatz #falls einsatz hinzugefügt wird
+            self.einsatz *= 2 #falls einsatz hinzugefügt wird
             self.hit()
+        
 
     def split(self):
         aktuelle_hand = self.hands[self.active_hand_index]
@@ -140,7 +145,7 @@ class Spieler():
 
                 if wert > 21:
                     print(f"hand{self.active_hand_index} Verloren")
-                    break_loop[0] = True
+                    #muss abgebrochen werden,aber nicht break_loop[0] = True
 
                 elif wert == 21:
                     self.stand()
@@ -156,8 +161,12 @@ class Spieler():
             self.active_hand_index += 1
             print(f"Wechsel zu Hand {self.active_hand_index}")
             return False  # noch Hände offen
+        
         else:
             dealer_zeigt_zweite_karte  =True
+            for btn in buttons:
+                btn.active = False
+                            
             deck_auswertung()
             print("Alle Hände gespielt")
            # alle Hände durch
@@ -217,32 +226,31 @@ class A(Karte):
     def __init__(self, farbe): 
         super().__init__(11, farbe)
 
+
 # Karten erstellen
 karten_ls = []
-Bild = [["cards/2_of_clubs.png","cards/2_of_diamonds.png","cards/2_of_hearts.png","cards/2_of_spades.png"],
-        ["cards/3_of_clubs.png","cards/3_of_diamonds.png","cards/3_of_hearts.png","cards/3_of_spades.png"],
-        ["cards/4_of_clubs.png","cards/4_of_diamonds.png","cards/4_of_hearts.png","cards/4_of_spades.png"],
-        ["cards/5_of_clubs.png","cards/5_of_diamonds.png","cards/5_of_hearts.png","cards/5_of_spades.png"],
-        ["cards/6_of_clubs.png","cards/6_of_diamonds.png","cards/6_of_hearts.png","cards/6_of_spades.png"],
-        ["cards/7_of_clubs.png","cards/7_of_diamonds.png","cards/7_of_hearts.png","cards/7_of_spades.png"],
-        ["cards/8_of_clubs.png","cards/8_of_diamonds.png","cards/8_of_hearts.png","cards/8_of_spades.png"],
-        ["cards/9_of_clubs.png","cards/9_of_diamonds.png","cards/9_of_hearts.png","cards/9_of_spades.png"],
-        ["cards/10_of_clubs.png","cards/10_of_diamonds.png","cards/10_of_hearts.png","cards/10_of_spades.png"],
-        ["cards/ace_of_clubs.png","cards/ace_of_diamonds.png","cards/ace_of_hearts.png","cards/ace_of_spades.png"],
-        ["cards/jack_of_clubs.png","cards/jack_of_diamonds.png","cards/jack_of_hearts.png","cards/jack_of_spades.png"],
-        ["cards/king_of_clubs.png","cards/king_of_diamonds.png","cards/king_of_hearts.png","cards/king_of_spades.png"],
-        ["cards/queen_of_clubs.png","cards/queen_of_diamonds.png","cards/queen_of_hearts.png","cards/queen_of_spades.png"]]
+Farben = ["clubs", "diamonds", "hearts", "spades"]
+Karten_Namen = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "ace", "jack", "king", "queen"]
 
-karten_bild = 0
+Bild = []
 
-for kartenwert in range(2, 11):
+for name in Karten_Namen:
+    bildreihe = []
+    for farbe in Farben:
+        pfad = f"cards/{name}_of_{farbe}.png"
+        bildreihe.append(pfad)
+    Bild.append(bildreihe)
+
+stelle_karten_bild = 0
+
+for stelle_karten_bild,kartenwert in enumerate(range(2, 11)):
     for karten in range(0,4):
         if kartenwert == 10:
             karten_ls.extend([Zehn(Bild[8][karten]), J(Bild[10][karten]), Q(Bild[12][karten]), K(Bild[11][karten]), A(Bild[9][karten])])
         else:
-            karte = Karte(kartenwert, Bild[karten_bild][karten])
+            karte = Karte(kartenwert, Bild[stelle_karten_bild][karten])
             karten_ls.append(karte)
-    karten_bild += 1
+    stelle_karten_bild += 1
 
 random.shuffle(karten_ls)
 
@@ -257,6 +265,7 @@ def berechne_hand_wert(hand):
 
     return wert
 
+
 def deck_auswertung():
     for idx, hand in enumerate(spieler1.hands):
         wert = berechne_hand_wert(hand)
@@ -264,8 +273,12 @@ def deck_auswertung():
 
         if wert > 21:
             if spieler1.active_hand_index+1 == len(spieler1.hands):
+                
+                for btn in buttons:
+                    btn.active = False
+                
                 if spieler1.active_hand_index == 0:
-                    print(f"Deck Verloren")
+                    print(f"Spieler hat Verloren")
 
                 else:
                     break_loop[0]
@@ -289,7 +302,9 @@ def double():
     if len(spieler1.hands[spieler1.active_hand_index]) == 2:
         spieler1.double()
         deck_auswertung()
-        break_loop[0] = True
+        for btn in buttons:
+            btn.active = False
+        #muss abgebrochen werden,aber nicht break_loop[0] = True
     else:
         print("Doubln nicht möglich")
 
@@ -313,7 +328,6 @@ buttons = [
     Button("Double", 320, 500, 100, 40, double),
     Button("Split", 430, 500, 100, 40, split)
 ]
-
 
 
 deck_auswertung()
