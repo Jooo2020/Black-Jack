@@ -14,7 +14,7 @@ def zeichne_hand(screen, hand, pos_x, pos_y):
 pygame.init()
 
 # Bildschirm erstellen
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((1500, 750))
 pygame.display.set_caption("Blackjack")
 
 # Font
@@ -26,15 +26,30 @@ FONT = pygame.font.SysFont("Arial", 20)
 clock = pygame.time.Clock()
 
 # Button-Funktion
-def button(text, x, y, w, h, screen, action=None):
-    mouse = pygame.mouse.get_pos()
-    rect = pygame.Rect(x, y, w, h)
-    color = (70, 130, 180)
-    if rect.collidepoint(mouse):
-        color = (100, 160, 210)
-    pygame.draw.rect(screen, color, rect)
-    text_surface = FONT.render(text, True, (255, 255, 255))
-    screen.blit(text_surface, (x + 10, y + 10))
+class Button:
+    def __init__(self, text, x, y, w, h, action=None, active=True):
+        self.text = text
+        self.rect = pygame.Rect(x, y, w, h)
+        self.action = action
+        self.active = active
+
+    def draw(self, screen):
+        mouse = pygame.mouse.get_pos()
+        color = (70, 130, 180) if self.active else (120, 120, 120)
+        if self.rect.collidepoint(mouse) and self.active:
+            color = (100, 160, 210)
+        pygame.draw.rect(screen, color, self.rect)
+        text_surface = FONT.render(self.text, True, (255, 255, 255))
+        screen.blit(text_surface, (self.rect.x + 10, self.rect.y + 10))
+
+    def handle_event(self, event):
+        if self.active and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.rect.collidepoint(pygame.mouse.get_pos()):
+                if self.action:
+                    self.action()
+
+
+
 
 
 
@@ -47,6 +62,9 @@ class Dealer():
 
     def dealer_karten(self):
         self.__dealer_deck = [karten_ls[1], karten_ls[3]]
+        
+        karten_ls.pop(1)
+        karten_ls.pop(2)
         
         wert = berechne_hand_wert(self.__dealer_deck)
         if wert == 21:
@@ -81,8 +99,11 @@ class Spieler():
         self.einsatz = einsatz
         self.active_hand_index = 0
         
+        
     def spieler_karten(self):
         self.hands = [[karten_ls[0], karten_ls[2]]]
+        karten_ls.pop(0)
+        karten_ls.pop(1)
         
         wert = berechne_hand_wert(self.hands[0])
         if wert == 21: #visualisierung mit schriftzug 
@@ -91,7 +112,7 @@ class Spieler():
 
     def hit(self):
         self.hands[self.active_hand_index].append(karten_ls.pop(0))
-
+        
 
     def double(self):
         
@@ -135,12 +156,7 @@ class Spieler():
                     
                 elif wert ==21:
                     self.stand()
-                     
-                else:
-                    buttons = [["Hit", 100, 500, 100, 40, screen,lambda: self.hit()],
-                    ["Stand", 210, 500, 100, 40, screen,lambda: self.stand()],
-                    ["Double", 320, 500, 100, 40, screen,lambda: self.double()],
-                    ["Split", 430, 500, 100, 40, screen,lambda: self.split()]]
+                    
                 
         else:
             print("Split nicht möglich")
@@ -155,7 +171,7 @@ class Spieler():
         
         else:
             print("Alle Hände gespielt")
-           # alle Hände durch
+           # alle Hände durch           
             dealer_deck = dealer1.hitting_dealer()
             dealer_wert = berechne_hand_wert(dealer_deck)
             
@@ -263,7 +279,7 @@ def berechne_hand_wert(hand):
 
     return wert
 
-def auswertung():
+def deck_auswertung():
     for idx, hand in enumerate(spieler1.hands):
         wert = berechne_hand_wert(hand)
         print(f"Hand {idx}: {[k.get_karten_wert() for k in hand]}")
@@ -282,13 +298,12 @@ def auswertung():
 
 def hit(): 
     spieler1.hit()
-    auswertung()
+    deck_auswertung()
 
         
-def stand(): 
-     
+def stand():
     if spieler1.stand():  
-        auswertung()
+        deck_auswertung()
     else:
         print(f"Hand{spieler1.active_hand_index} aktiv")
 
@@ -298,7 +313,7 @@ def stand():
 def double():
     if len(spieler1.hands[spieler1.active_hand_index]) == 2:
         spieler1.double()
-        auswertung()
+        deck_auswertung()
         break_loop[0] = True
         
     else:
@@ -318,48 +333,41 @@ dealer1.dealer_karten()
 spieler1.spieler_karten()
 
 break_loop = [False]
-#Auswertung muss auch visualisiert werden 
+#auswertung muss auch visualisiert werden 
         
 # Spiel-Schleife mit Buttons
-buttons = [["Hit", 100, 500, 100, 40, screen, hit],
-        ["Stand", 210, 500, 100, 40, screen, stand],
-        ["Double", 320, 500, 100, 40, screen, double],
-        ["Split", 430, 500, 100, 40, screen, split]]
+buttons = [
+    Button("Hit", 100, 500, 100, 40, hit),
+    Button("Stand", 210, 500, 100, 40, stand),
+    Button("Double", 320, 500, 100, 40, double),
+    Button("Split", 430, 500, 100, 40, split)
+]
 
 
 
-auswertung()
-while not break_loop[0]:
-    screen.fill((0, 120, 0))  # Grüner Hintergrund
+deck_auswertung()
+while not break_loop[0]: #Läuft, bis break_loop[0] True wird
+    screen.fill((0, 120, 0))
 
+    # Event-Handling zentral
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = pygame.mouse.get_pos()
-            for knopf in buttons:
-                x, y, w, h = knopf[1], knopf[2], knopf[3], knopf[4]
-                if pygame.Rect(x, y, w, h).collidepoint(mouse_pos):
-                    action = knopf[6]
-                    if action:
-                        action()
+        for btn in buttons:
+            btn.handle_event(event)
 
-    # Dealer-Karten offen anzeigen
-    zeichne_hand(screen, dealer1.get_dealer_deck(), 100, 50)#zeigt aktuell alle dealer karten an, am Anfang nur di eerste Karte anzeigen 
-
-    # Spieler-Karten anzeigen (jede Hand untereinander)
+    # Karten anzeigen
+    zeichne_hand(screen, dealer1.get_dealer_deck(), 100, 50)
     for i, hand in enumerate(spieler1.hands):
         zeichne_hand(screen, hand, 100, 300 + i * 100)
 
     # Buttons zeichnen
-    for knopf in buttons:
-        button(*knopf)
+    for btn in buttons:
+        btn.draw(screen)
 
     pygame.display.flip()
     clock.tick(30)
-
-
 
 
 # Pygame beenden
