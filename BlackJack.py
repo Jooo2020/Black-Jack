@@ -4,30 +4,6 @@ import sys
 import random
 import time
 
-
-#Darstellung für die Karten(Philip)
-def zeichne_hand(screen, hand, pos_x, pos_y):
-    abstand = 60  # Abstand zwischen Karten horizontal
-    karte_breite, karte_hoehe = 80, 120
-    for i, karte in enumerate(hand):
-        karte_bild = karte.get_image()
-        screen.blit(karte_bild, (pos_x + i * abstand, pos_y))
-
-# Initialisierung
-pygame.init()
-status_message = ""
-
-# Bildschirm erstellen
-screen = pygame.display.set_mode((1500, 750))
-pygame.display.set_caption("Blackjack")
-
-backside_image = pygame.transform.smoothscale(pygame.image.load("cards/backside.png").convert_alpha(), (80, 120))
-# Font
-FONT = pygame.font.SysFont("Arial", 20)
-
-# Uhr für Framerate
-clock = pygame.time.Clock()
-
 # Button Klasse (Johannes)
 class Button:
     def __init__(self, text, x, y, w, h, action=None, active=True): #übergabe Parameter (text = Text,x,y = positionierung, w,h = Dimensionen,action = none falls ein Button keine funktion übergibt, active = ob button gedrükt werden kann oder nicht)
@@ -72,11 +48,10 @@ class Dealer():
 
     def hitting_dealer(self): #Wenn spieler alle seine Hände gespielt hat wird diese Methode aufgerufen um die Dealer hand zu vervolsständigen 
         wert = berechne_hand_wert(self.__dealer_deck) 
-        
+        restart_button.active = True
         if wert < 17:
-            self.__dealer_deck.append(karten_ls[0]) 
-            karten_ls.pop(0)
-            time.sleep(1.5) 
+            self.__dealer_deck.append(karten_ls.pop(0))
+            
             return self.hitting_dealer() 
 
         elif wert > 21: #wenn wert >21 hat der Spieler gewonnen falls seine Hand auch nicht über 21 hat 
@@ -84,8 +59,11 @@ class Dealer():
             return self.__dealer_deck
 
         else:
+            
             return self.__dealer_deck
-
+        
+        
+            
 
     def get_dealer_deck(self):
         return self.__dealer_deck
@@ -106,6 +84,7 @@ class Spieler():
         wert = berechne_hand_wert(self.hands[0])
         if wert == 21: 
             set_status_message("Spieler hat Blackjack")
+            stand()
 
 
     def hit(self):
@@ -118,7 +97,11 @@ class Spieler():
         else:
             self.__guthaben -= self.einsatz #falls einsatz hinzugefügt wird
             self.einsatz *= 2 #falls einsatz hinzugefügt wird
-            self.hit()
+            hit()
+            stand()
+            
+        
+            
         
 
     def split(self):
@@ -146,10 +129,12 @@ class Spieler():
 
                 if wert > 21:
                     set_status_message(f"hand{self.active_hand_index} Verloren")
-                    #muss abgebrochen werden,aber nicht break_loop[0] = True
+                    
 
                 elif wert == 21:
-                    self.stand()
+
+                    stand()
+                    
                     
                 
         else:
@@ -164,13 +149,14 @@ class Spieler():
             return False  # noch Hände offen
         
         else:
+        
+            
             dealer_zeigt_zweite_karte  =True
             for btn in buttons:
                 btn.active = False
-                            
-            deck_auswertung()
+            
             print("Alle Hände gespielt")
-           # alle Hände durch
+        # alle Hände durch
             dealer_deck = dealer1.hitting_dealer()
             dealer_wert = berechne_hand_wert(dealer_deck)
             
@@ -179,17 +165,25 @@ class Spieler():
             
             for hand in spieler1.hands:
                 hand_wert = berechne_hand_wert(hand) 
-                if hand_wert > dealer_wert and hand_wert <= 21 and dealer_wert <=21:
-                    set_status_message(f"Hand{self.active_hand_index}: gewonnen")
-                    self.__guthaben += 2*self.einsatz
-                
-                elif hand_wert < dealer_wert and dealer_wert <=21 and hand_wert <=21:
-                    set_status_message(f"Hand{self.active_hand_index}: verloren")
+                if hand_wert <=21:
                     
-                elif hand_wert == dealer_wert and hand_wert <=21:
-                    set_status_message(f"Draw")
-                    self.__guthaben += self.einsatz
+                    if hand_wert > dealer_wert:
+                        set_status_message(f"Hand{self.active_hand_index}: gewonnen")
+                        self.__guthaben += 2*self.einsatz #noch keine funktion 
                     
+                    elif hand_wert < dealer_wert:
+                        set_status_message(f"Hand{self.active_hand_index}: verloren")
+                        
+                        
+                    elif hand_wert == dealer_wert:
+                        set_status_message(f"Draw")
+                        self.__guthaben += self.einsatz #guthaben noch keine funktion 
+                        
+                else:
+                    deck_auswertung(False)                    
+                    
+                                        
+            restart_button.active = True
             return True
 
 class Karte():
@@ -228,32 +222,6 @@ class A(Karte):
         super().__init__(11, farbe)
 
 
-# Karten erstellen
-karten_ls = []
-Farben = ["clubs", "diamonds", "hearts", "spades"]
-Karten_Namen = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "ace", "jack", "king", "queen"]
-
-Bild = []
-
-for name in Karten_Namen:
-    bildreihe = []
-    for farbe in Farben:
-        pfad = f"cards/{name}_of_{farbe}.png"
-        bildreihe.append(pfad)
-    Bild.append(bildreihe)
-
-stelle_karten_bild = 0
-
-for stelle_karten_bild,kartenwert in enumerate(range(2, 11)):
-    for karten in range(0,4):
-        if kartenwert == 10:
-            karten_ls.extend([Zehn(Bild[8][karten]), J(Bild[10][karten]), Q(Bild[12][karten]), K(Bild[11][karten]), A(Bild[9][karten])])
-        else:
-            karte = Karte(kartenwert, Bild[stelle_karten_bild][karten])
-            karten_ls.append(karte)
-    stelle_karten_bild += 1
-
-random.shuffle(karten_ls)
 
 # Button-Aktionen
 def berechne_hand_wert(hand):
@@ -267,26 +235,25 @@ def berechne_hand_wert(hand):
     return wert
 
 
-def deck_auswertung():
+def deck_auswertung(active = True):
     for idx, hand in enumerate(spieler1.hands):
         wert = berechne_hand_wert(hand)
         print(f"Hand {idx}: {[k.get_karten_wert() for k in hand]}")
 
         if wert > 21:
-            if spieler1.active_hand_index+1 == len(spieler1.hands):
-                
-                for btn in buttons:
-                    btn.active = False
-                
-                if spieler1.active_hand_index == 0:
-                    set_status_message(f"Deck Verloren")
-
-                else:
-                    break_loop[0]
-
-            else:                    
+            if spieler1.active_hand_index+1 < len(spieler1.hands):
                 set_status_message(f"Hand{idx} Verloren")
+                
+
+            else:    
+                set_status_message(f"Deck Verloren")
+                
+            if active == True:
                 spieler1.stand()
+            
+                    
+                          
+                
 
 def hit(): 
     spieler1.hit()
@@ -305,7 +272,9 @@ def double():
         deck_auswertung()
         for btn in buttons:
             btn.active = False
-        #muss abgebrochen werden,aber nicht break_loop[0] = True
+        restart_button.active = True
+        
+        
     else:
         print("Doubln nicht möglich")
 
@@ -320,94 +289,138 @@ def restart_game():
     global spieler1, dealer1, karten_ls, break_loop, dealer_zeigt_zweite_karte,status_message
     status_message = ""
 
-    # Karten neu generieren
-    karten_ls.clear()
-    karten_bild = 0
-    for kartenwert in range(2, 11):
-        for karten in range(0, 4):
+    print("Spiel wurde neu gestartet")
+    run_me()
+
+
+
+
+#Darstellung für die Karten(Philip)
+def zeichne_hand(screen, hand, pos_x, pos_y):
+    abstand = 60  # Abstand zwischen Karten horizontal
+    karte_breite, karte_hoehe = 80, 120
+    for i, karte in enumerate(hand):
+        karte_bild = karte.get_image()
+        screen.blit(karte_bild, (pos_x + i * abstand, pos_y))
+
+# Initialisierung
+
+
+
+
+def karten_generierung():
+
+# Karten erstelleng
+    global karten_ls
+    karten_ls = []
+    Farben = ["clubs", "diamonds", "hearts", "spades"]
+    Karten_Namen = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "ace", "jack", "king", "queen"]
+    Bild = []
+
+    for name in Karten_Namen:
+        bildreihe = []
+        for farbe in Farben:
+            pfad = f"cards/{name}_of_{farbe}.png"
+            bildreihe.append(pfad)
+        Bild.append(bildreihe)
+
+    stelle_karten_bild = 0
+
+    for stelle_karten_bild,kartenwert in enumerate(range(2, 11)):
+        for karten in range(0,4):
             if kartenwert == 10:
                 karten_ls.extend([Zehn(Bild[8][karten]), J(Bild[10][karten]), Q(Bild[12][karten]), K(Bild[11][karten]), A(Bild[9][karten])])
             else:
-                karte = Karte(kartenwert, Bild[karten_bild][karten])
+                karte = Karte(kartenwert, Bild[stelle_karten_bild][karten])
                 karten_ls.append(karte)
-        karten_bild += 1
+        stelle_karten_bild += 1
 
     random.shuffle(karten_ls)
+    
 
-    # Spielobjekte neu erstellen
+
+def run_me():
+    global buttons,restart_button,break_loop,spieler1,dealer1,dealer_zeigt_zweite_karte
+
+    
+    karten_generierung()
+    
+    dealer_zeigt_zweite_karte = False  # Flag, ob zweite Dealer-Karte gezeigt wird
+
     dealer1 = Dealer()
     spieler1 = Spieler(1000, 100)
-    dealer_zeigt_zweite_karte = False
-    break_loop[0] = False
 
     dealer1.dealer_karten()
     spieler1.spieler_karten()
-    print("Spiel wurde neu gestartet")
 
-# Spielobjekte
-dealer1 = Dealer()
-spieler1 = Spieler(1000, 100)
-dealer_zeigt_zweite_karte = False  # Flag, ob zweite Dealer-Karte gezeigt wird
+    break_loop = [False]
 
-dealer1.dealer_karten()
-spieler1.spieler_karten()
-
-break_loop = [False]
-
-# Spiel-Schleife mit Buttons
-buttons = [
-    Button("Hit", 100, 500, 100, 40, hit),
-    Button("Stand", 210, 500, 100, 40, stand),
-    Button("Double", 320, 500, 100, 40, double),
-    Button("Split", 430, 500, 100, 40, split),
-    Button("Restart", 540, 500, 100, 40, restart_game)
-
-]
+    # Spiel-Schleife mit Buttons
+    buttons = [
+        Button("Hit", 100, 500, 100, 40, hit),
+        Button("Stand", 210, 500, 100, 40, stand),
+        Button("Double", 320, 500, 100, 40, double),
+        Button("Split", 430, 500, 100, 40, split),
+    ]
+    restart_button = Button("Restart", 540, 500, 100, 40, restart_game,False)
+    deck_auswertung()
 
 
-deck_auswertung()
+    while not break_loop[0]: #Läuft, bis break_loop[0] True wird
+        
+        screen.fill((0, 120, 0))
 
+        # Event-Handling zentral
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+                
+            restart_button.handle_event(event)
+            for btn in buttons:
+                btn.handle_event(event)
 
-while not break_loop[0]: #Läuft, bis break_loop[0] True wird
-    screen.fill((0, 120, 0))
+        # Dealer-Karten offen anzeigen
+        if not dealer_zeigt_zweite_karte:
+            # Erste Karte offen anzeigen
+            screen.blit(dealer1.get_dealer_deck()[0].get_image(), (100, 50))
 
-    # Event-Handling zentral
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+            # Zweite Karte verdeckt (blaues Rechteck)
+            screen.blit(backside_image, (160, 50))
+
+        else:
+            # Alle Karten anzeigen
+            zeichne_hand(screen, dealer1.get_dealer_deck(), 100, 50)
+
+        # Spieler-Karten anzeigen (jede Hand untereinander)
+        for i, hand in enumerate(spieler1.hands):
+            zeichne_hand(screen, hand, 100, 300 + i * 100)
+
+        # Buttons zeichnen
         for btn in buttons:
-            btn.handle_event(event)
-
-    # Dealer-Karten offen anzeigen
-    if not dealer_zeigt_zweite_karte:
-        # Erste Karte offen anzeigen
-        screen.blit(dealer1.get_dealer_deck()[0].get_image(), (100, 50))
-
-        # Zweite Karte verdeckt (blaues Rechteck)
-        screen.blit(backside_image, (160, 50))
-
-    else:
-        # Alle Karten anzeigen
-        zeichne_hand(screen, dealer1.get_dealer_deck(), 100, 50)
-
-    # Spieler-Karten anzeigen (jede Hand untereinander)
-    for i, hand in enumerate(spieler1.hands):
-        zeichne_hand(screen, hand, 100, 300 + i * 100)
-
-    # Buttons zeichnen
-    for btn in buttons:
-        btn.draw(screen)
-
-    if status_message != "":
-        text_surf = FONT.render(status_message, True, (255, 255, 255))
-        screen.blit(text_surf, (100, 450))
+            btn.draw(screen)
+            
+        restart_button.draw(screen)
+        if status_message != "":
+            text_surf = FONT.render(status_message, True, (255, 255, 255))
+            screen.blit(text_surf, (100, 450))
 
 
-    pygame.display.flip()
-    clock.tick(30)
+        pygame.display.flip()
+        clock.tick(30)
 
+    # Pygame beenden
 
-# Pygame beenden
-time.sleep(1)
-pygame.quit()
+pygame.init()
+status_message = ""
+screen = pygame.display.set_mode((1500, 750))
+pygame.display.set_caption("Blackjack")
+
+backside_image = pygame.transform.smoothscale(pygame.image.load("cards/backside.png").convert_alpha(), (80, 120))
+# Font
+FONT = pygame.font.SysFont("Arial", 20)
+
+# Uhr für Framerate
+clock = pygame.time.Clock()
+
+run_me()

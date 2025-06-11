@@ -1,1 +1,2 @@
-hitting_dealer
+pygame.init()
+status_message = ""
