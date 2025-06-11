@@ -1,2 +1,1 @@
-    else:                    
-                prin
+dealer_zeigt_zweite_karte

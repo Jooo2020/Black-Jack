@@ -157,6 +157,8 @@ class Spieler():
             print(f"Wechsel zu Hand {self.active_hand_index}")
             return False  # noch Hände offen
         else:
+            dealer_zeigt_zweite_karte  =True
+            deck_auswertung()
             print("Alle Hände gespielt")
            # alle Hände durch
             dealer_deck = dealer1.hitting_dealer()
