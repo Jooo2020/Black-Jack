@@ -387,7 +387,7 @@ while not break_loop[0]: #Läuft, bis break_loop[0] True wird
 
     if status_message != "":
         text_surf = FONT.render(status_message, True, (255, 255, 255))
-        screen.blit(text_surf, (100, 450))
+        screen.blit(text_surf, (1000, 50))
 
 
     pygame.display.flip()
