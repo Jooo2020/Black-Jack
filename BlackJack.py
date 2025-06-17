@@ -163,20 +163,21 @@ class Spieler():
             
             print("Dealerhand:", [k.get_karten_wert() for k in dealer1.get_dealer_deck()])
             
+            
             for hand in spieler1.hands:
                 hand_wert = berechne_hand_wert(hand) 
                 if hand_wert <=21:
                     
                     if hand_wert > dealer_wert and dealer_wert>21:
-                        set_status_message(f"{deck_name} {self.active_hand_index}: Gewonnen")
+                        set_status_message(f"Hand{self.active_hand_index}: gewonnen")
                         self.__guthaben += 2*self.einsatz #noch keine funktion 
                     
                     elif hand_wert < dealer_wert and dealer_wert<= 21:
-                        set_status_message(f"{deck_name} {self.active_hand_index}: Verloren")
+                        set_status_message(f"Hand{self.active_hand_index}: verloren")
                         
                         
                     elif hand_wert == dealer_wert:
-                        set_status_message(f"{deck_name} {self.active_hand_index}: Draw")
+                        set_status_message(f"Draw")
                         self.__guthaben += self.einsatz #guthaben noch keine funktion 
                         
                 else:
@@ -367,8 +368,7 @@ def run_me():
 
 
     while not break_loop[0]: #Läuft, bis break_loop[0] True wird
-        print("Loop läuft")
-        print("Karten generiert:", len(karten_ls))
+
 
 
         screen.fill((0, 120, 0))
