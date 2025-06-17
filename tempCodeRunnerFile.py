@@ -1,1 +1,2 @@
-dealer_zeigt_zweite_karte
+pygame.init()
+status_message = ""
