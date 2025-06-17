@@ -227,12 +227,14 @@ class A(Karte):
 
 # Button-Aktionen
 def berechne_hand_wert(hand):
+    global anzeige_wert
     wert = sum([karte.get_karten_wert() for karte in hand])
     anzahl_asse = sum(1 for karte in hand if isinstance(karte, A))
 
     while wert > 21 and anzahl_asse > 0:
         wert -= 10
         anzahl_asse -= 1
+    anzeige_wert= f"Hand{spieler1.active_hand_index}: {wert}"
     return wert
 
 
@@ -345,7 +347,7 @@ def karten_generierung():
 
 
 def run_me():
-    global buttons,restart_button,break_loop,spieler1,dealer1,dealer_zeigt_zweite_karte
+    global buttons,restart_button,break_loop,spieler1,dealer1,dealer_zeigt_zweite_karte,anzeige_wert
 
     
     karten_generierung()
@@ -361,12 +363,12 @@ def run_me():
 
     # Spiel-Schleife mit Buttons
     buttons = [
-        Button("Hit", 100, 500, 100, 40, hit),
-        Button("Stand", 210, 500, 100, 40, stand),
-        Button("Double", 320, 500, 100, 40, double),
-        Button("Split", 430, 500, 100, 40, split),
+        Button("Hit", 500, 500, 100, 40, hit),
+        Button("Stand", 610, 500, 100, 40, stand),
+        Button("Double", 720, 500, 100, 40, double),
+        Button("Split", 830, 500, 100, 40, split),
     ]
-    restart_button = Button("Restart", 540, 500, 100, 40, restart_game,False)
+    restart_button = Button("Restart", 940, 500, 100, 40, restart_game,False)
     deck_auswertung()
 
 
@@ -413,6 +415,9 @@ def run_me():
         if status_message != "":
             text_surf = FONT.render(status_message, True, (255, 255, 255))
             screen.blit(text_surf, (1000, 50))
+        
+        anzeig_wert = FONT.render(anzeige_wert, True, (255, 255, 255))
+        screen.blit(anzeig_wert, (100, 250))
 
 
         pygame.display.flip()
