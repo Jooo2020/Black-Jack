@@ -167,11 +167,11 @@ class Spieler():
                 hand_wert = berechne_hand_wert(hand) 
                 if hand_wert <=21:
                     
-                    if hand_wert > dealer_wert:
+                    if hand_wert > dealer_wert and dealer_wert>21:
                         set_status_message(f"Hand{self.active_hand_index}: gewonnen")
                         self.__guthaben += 2*self.einsatz #noch keine funktion 
                     
-                    elif hand_wert < dealer_wert:
+                    elif hand_wert < dealer_wert and dealer_wert<= 21:
                         set_status_message(f"Hand{self.active_hand_index}: verloren")
                         
                         

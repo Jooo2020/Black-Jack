@@ -1,2 +1,1 @@
-pygame.init()
-status_message = ""
+un_me():
