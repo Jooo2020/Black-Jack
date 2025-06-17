@@ -2,7 +2,35 @@
 import pygame
 import sys
 import random
-import time
+
+"""
+Blackjack-Spiel mit Pygame
+
+Implementierung eines simplen Blackjack-Spiels mit folgenden Features:
+- Kartendeck mit Bilddarstellung (inkl. Kartenwerte und -farben)
+- Spieler- und Dealer-Klassen mit Spielmechanik (Hit, Stand, Double, Split)
+- Button-Interface zur Steuerung (Hit, Stand, Double, Split, Restart)
+- Spiel-Logik für Blackjack-Regeln, inklusive As-Wert-Anpassung
+- Grafische Ausgabe der Karten und Statusmeldungen mit Pygame
+
+Klassen:
+- Button: GUI-Element zur Interaktion mit Maus
+- Dealer: Repräsentiert den Dealer mit Kartenhand und Zieh-Logik
+- Spieler: Repräsentiert den Spieler mit mehreren Händen, Einsatz und Spielaktionen
+- Karte (+ Unterklassen Zehn, J, Q, K, A): Modelliert einzelne Spielkarten mit Bild und Wert
+
+Wichtige Funktionen:
+- berechne_hand_wert(hand): Ermittelt Wert einer Kartenhand mit Berücksichtigung von Assen
+- deck_auswertung(): Wertauswertung und Statusupdate der aktuellen Hand
+- run_me(): Hauptspielfunktion mit Pygame-Initialisierung, Spielstart und Hauptschleife
+
+Benötigte Ressourcen:
+- Kartenbilder im Ordner "cards" mit Benennung wie "2_of_clubs.png", "ace_of_spades.png" etc.
+- Rückseite der Karte als "backside.png"
+
+Startet das Spiel in einem Pygame-Fenster (1500x750 px).
+"""
+
 
 # Button Klasse (Johannes)
 class Button:
@@ -45,6 +73,7 @@ class Dealer():
         
         if wert == 21: 
             set_status_message("Dealer hat gewonnen")
+            spieler1.spieler_karten()
             stand()
 
     def hitting_dealer(self): #Wenn spieler alle seine Hände gespielt hat wird diese Methode aufgerufen um die Dealer hand zu vervolsständigen 
@@ -52,7 +81,6 @@ class Dealer():
         restart_button.active = True
         if wert < 17:
             self.__dealer_deck.append(karten_ls.pop(0))
-            
             return self.hitting_dealer() 
 
         elif wert > 21: #wenn wert >21 hat der Spieler gewonnen falls seine Hand auch nicht über 21 hat 
@@ -84,8 +112,7 @@ class Spieler():
         
         wert = berechne_hand_wert(self.hands[0])
         if wert == 21: 
-            set_status_message("Spieler hat Blackjack")
-            deck_auswertung()  # Ruft implizit stand() und deaktiviert Buttons
+            stand()  # Ruft implizit stand() und deaktiviert Buttons
 
 
 
@@ -165,24 +192,29 @@ class Spieler():
             print("Dealerhand:", [k.get_karten_wert() for k in dealer1.get_dealer_deck()])
             
             
-            for hand in spieler1.hands:
+            for hand in self.hands:
                 hand_wert = berechne_hand_wert(hand) 
-                if hand_wert <=21:
+                if hand_wert <21:
                     
                     if hand_wert > dealer_wert and dealer_wert>21:
-                        set_status_message(f"Hand{self.active_hand_index}: gewonnen")
+                        set_status_message(f"Hand{self.active_hand_index}: Gewonnen")
                         self.__guthaben += 2*self.einsatz #noch keine funktion 
                     
                     elif hand_wert < dealer_wert and dealer_wert<= 21:
-                        set_status_message(f"Hand{self.active_hand_index}: verloren")
+                        set_status_message(f"Hand{self.active_hand_index}: Verloren")
                         
                         
                     elif hand_wert == dealer_wert:
-                        set_status_message(f"Draw")
+                        set_status_message(f"Hand{self.active_hand_index}: Draw")
                         self.__guthaben += self.einsatz #guthaben noch keine funktion 
                         
+                elif hand_wert ==21 and len(self.hands) == 1:
+                    set_status_message("Spieler hat Blackjack")
+                        
                 else:
-                    deck_auswertung(False)                    
+                    deck_auswertung(False)    
+                    
+                                    
                     
                                         
             restart_button.active = True
@@ -227,36 +259,33 @@ class A(Karte):
 
 # Button-Aktionen
 def berechne_hand_wert(hand):
-    global anzeige_wert
     wert = sum([karte.get_karten_wert() for karte in hand])
-    anzahl_asse = sum(1 for karte in hand if isinstance(karte, A))
+    anzahl_asse = sum(1 for karte in hand if isinstance(karte, A)) # Objektorientierte Typüberprüfung
 
     while wert > 21 and anzahl_asse > 0:
         wert -= 10
         anzahl_asse -= 1
-    anzeige_wert= f"Hand{spieler1.active_hand_index}: {wert}"
+    
     return wert
 
 
 def deck_auswertung(active = True):
-    for idx, hand in enumerate(spieler1.hands):
-        wert = berechne_hand_wert(hand)
-        print(f"Hand {idx}: {[k.get_karten_wert() for k in hand]}")
-        print(wert)
+    global anzeige_wert
 
-        if wert > 21:
-            if spieler1.active_hand_index+1 < len(spieler1.hands):
-                set_status_message(f"Hand{idx} Verloren")
-                
+    print(f"Hand {spieler1.active_hand_index}: {[k.get_karten_wert() for k in spieler1.hands[spieler1.active_hand_index]]}")
+        
+    wert = berechne_hand_wert(spieler1.hands[spieler1.active_hand_index])
+    anzeige_wert= f"Hand{spieler1.active_hand_index}: {wert}"
 
-            else:    
-                set_status_message(f"Deck Verloren")
-                
-            if active == True:
-                spieler1.stand()
+    if wert > 21:
+        
+        set_status_message(f"Hand{spieler1.active_hand_index} Verloren")
             
-                    
-                          
+        if active == True:
+            spieler1.stand()
+        
+                
+                        
                 
 
 def hit(): 
@@ -275,10 +304,7 @@ def double():
     if len(spieler1.hands[spieler1.active_hand_index]) == 2:
         spieler1.double()
         deck_auswertung()
-        '''if spieler1.active_hand_index == len(spieler1.hands):
-            for btn in buttons:
-                btn.active = False
-            restart_button.active = True'''
+
             
         
         
@@ -287,6 +313,7 @@ def double():
 
 def split(): 
     spieler1.split()
+    deck_auswertung()
 
 def set_status_message(text):
     global status_message
@@ -295,9 +322,11 @@ def set_status_message(text):
 def restart_game():
     global spieler1, dealer1, karten_ls, break_loop, dealer_zeigt_zweite_karte,status_message
     status_message = ""
-
+    spieler1.active_hand_index =0
+    break_loop[0] = True
     print("Spiel wurde neu gestartet")
     run_me()
+
 
 
 
@@ -331,7 +360,6 @@ def karten_generierung():
             bildreihe.append(pfad)
         Bild.append(bildreihe)
 
-    stelle_karten_bild = 0
 
     for stelle_karten_bild,kartenwert in enumerate(range(2, 11)):
         for karten in range(0,4):
@@ -340,22 +368,22 @@ def karten_generierung():
             else:
                 karte = Karte(kartenwert, Bild[stelle_karten_bild][karten])
                 karten_ls.append(karte)
-        stelle_karten_bild += 1
 
-    random.shuffle(karten_ls)
+    for i in range(0,5):
+        random.shuffle(karten_ls)
     
 
 
 def run_me():
     global buttons,restart_button,break_loop,spieler1,dealer1,dealer_zeigt_zweite_karte,anzeige_wert
-
+    anzeige_wert =""
     
     karten_generierung()
     
     dealer_zeigt_zweite_karte = False  # Flag, ob zweite Dealer-Karte gezeigt wird
 
     dealer1 = Dealer()
-    spieler1 = Spieler(1000, 100)
+    spieler1 = Spieler(1000000000, 100)
 
 
 
@@ -369,11 +397,12 @@ def run_me():
         Button("Split", 830, 500, 100, 40, split),
     ]
     restart_button = Button("Restart", 940, 500, 100, 40, restart_game,False)
-    deck_auswertung()
+    
 
 
     dealer1.dealer_karten()
     spieler1.spieler_karten()
+    deck_auswertung()
 
     while not break_loop[0]: #Läuft, bis break_loop[0] True wird
 
