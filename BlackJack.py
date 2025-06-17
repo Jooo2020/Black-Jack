@@ -45,6 +45,7 @@ class Dealer():
         
         if wert == 21: 
             set_status_message("Dealer hat gewonnen")
+            stand()
 
     def hitting_dealer(self): #Wenn spieler alle seine Hände gespielt hat wird diese Methode aufgerufen um die Dealer hand zu vervolsständigen 
         wert = berechne_hand_wert(self.__dealer_deck) 
@@ -162,21 +163,20 @@ class Spieler():
             
             print("Dealerhand:", [k.get_karten_wert() for k in dealer1.get_dealer_deck()])
             
-            
             for hand in spieler1.hands:
                 hand_wert = berechne_hand_wert(hand) 
                 if hand_wert <=21:
                     
                     if hand_wert > dealer_wert and dealer_wert>21:
-                        set_status_message(f"Hand{self.active_hand_index}: gewonnen")
+                        set_status_message(f"{deck_name} {self.active_hand_index}: Gewonnen")
                         self.__guthaben += 2*self.einsatz #noch keine funktion 
                     
                     elif hand_wert < dealer_wert and dealer_wert<= 21:
-                        set_status_message(f"Hand{self.active_hand_index}: verloren")
+                        set_status_message(f"{deck_name} {self.active_hand_index}: Verloren")
                         
                         
                     elif hand_wert == dealer_wert:
-                        set_status_message(f"Draw")
+                        set_status_message(f"{deck_name} {self.active_hand_index}: Draw")
                         self.__guthaben += self.einsatz #guthaben noch keine funktion 
                         
                 else:
@@ -367,7 +367,10 @@ def run_me():
 
 
     while not break_loop[0]: #Läuft, bis break_loop[0] True wird
-        
+        print("Loop läuft")
+        print("Karten generiert:", len(karten_ls))
+
+
         screen.fill((0, 120, 0))
 
         # Event-Handling zentral
@@ -396,14 +399,14 @@ def run_me():
         for i, hand in enumerate(spieler1.hands):
             zeichne_hand(screen, hand, 100, 300 + i * 100)
 
-    # Buttons zeichnen
-    for btn in buttons:
-        btn.draw(screen)
+        # Buttons zeichnen
+        for btn in buttons:
+            btn.draw(screen)
 
-    restart_button.draw(screen)
-    if status_message != "":
-        text_surf = FONT.render(status_message, True, (255, 255, 255))
-        screen.blit(text_surf, (1000, 50))
+        restart_button.draw(screen)
+        if status_message != "":
+            text_surf = FONT.render(status_message, True, (255, 255, 255))
+            screen.blit(text_surf, (1000, 50))
 
 
         pygame.display.flip()
