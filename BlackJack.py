@@ -160,38 +160,37 @@ class Spieler():
                     if wert > 21:
                         set_status_message(f"hand{self.active_hand_index} Verloren")
                         
-
                     elif wert == 21:
-
                         stand()
                         
-                        
-                    
         else:
             print("Split nicht möglich")
 
     def stand(self):
         global dealer_zeigt_zweite_karte,buttons
 
-        if self.active_hand_index + 1 < len(self.hands):
+        if self.active_hand_index + 1 < len(self.hands): #der index ist kleiner als die länge der Hand 
             self.active_hand_index += 1
             print(f"Wechsel zu Hand {self.active_hand_index}")
             return False  # noch Hände offen
         
         else:
              
-            dealer_zeigt_zweite_karte  =True
+            dealer_zeigt_zweite_karte  =True 
             for btn in buttons:
                 btn.active = False
             
             print("Alle Hände gespielt")
         # alle Hände durch
+        
+        #Ausführung der Auswertung 
+        
             dealer_deck = dealer1.hitting_dealer()
             dealer_wert = berechne_hand_wert(dealer_deck)
             
-            print("Dealerhand:", [k.get_karten_wert() for k in dealer1.get_dealer_deck()])
+            print("Dealerhand:", [k.get_karten_wert() for k in dealer1.get_dealer_deck()])#gibt die Karten des dealers aus
             
-            
+            #durchlauf jeder hand zum vergleich mit der Dealer Hand 
             for hand in self.hands:
                 hand_wert = berechne_hand_wert(hand) 
                 if hand_wert <21:
@@ -259,7 +258,7 @@ class A(Karte):
 
 # Button-Aktionen
 def berechne_hand_wert(hand):
-    wert = sum([karte.get_karten_wert() for karte in hand])
+    wert = sum([karte.get_karten_wert() for karte in hand]) #listkomprehension für den Wert des decks
     anzahl_asse = sum(1 for karte in hand if isinstance(karte, A)) # Objektorientierte Typüberprüfung
 
     while wert > 21 and anzahl_asse > 0:
@@ -272,7 +271,7 @@ def berechne_hand_wert(hand):
 def deck_auswertung(active = True):
     global anzeige_wert
 
-    print(f"Hand {spieler1.active_hand_index}: {[k.get_karten_wert() for k in spieler1.hands[spieler1.active_hand_index]]}")
+    print(f"Hand {spieler1.active_hand_index}: {[k.get_karten_wert() for k in spieler1.hands[spieler1.active_hand_index]]}") # zeigt kartenwert des Spielers an
         
     wert = berechne_hand_wert(spieler1.hands[spieler1.active_hand_index])
     anzeige_wert= f"Hand{spieler1.active_hand_index}: {wert}"
