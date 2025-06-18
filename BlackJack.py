@@ -32,29 +32,47 @@ Startet das Spiel in einem Pygame-Fenster (1500x750 px).
 """
 
 
-# Button Klasse (Johannes)
+# Button Klasse (Philip)
 class Button:
-    def __init__(self, text, x, y, w, h, action=None, active=True): #übergabe Parameter (text = Text,x,y = positionierung, w,h = Dimensionen,action = none falls ein Button keine funktion übergibt, active = ob button gedrükt werden kann oder nicht)
-        self.text = text
-        self.rect = pygame.Rect(x, y, w, h) #
-        self.action = action
-        self.active = active
+    def __init__(self, text, x, y, w, h, action=None, active=True):
+        # Initialisiert den Button mit übergebenen Parametern
+
+        self.text = text  # Der Text, der auf dem Button stehen soll
+        self.rect = pygame.Rect(x, y, w, h)  # Das Rechteck, das den Button definiert (Position und Größe)
+        self.action = action  # Die Funktion, die beim Klicken aufgerufen werden soll (kann auch None sein)
+        self.active = active  # Gibt an, ob der Button aktuell aktiv ist (klickbar)
 
     def draw(self, screen):
-        mouse = pygame.mouse.get_pos()
-        color = (70, 130, 180) if self.active else (120, 120, 120)
+        # Zeichnet den Button auf dem Bildschirm (screen)
+
+        mouse = pygame.mouse.get_pos()  # Holt die aktuelle Mausposition (x, y)
+
+        # Wähle die Farbe des Buttons je nachdem, ob er aktiv ist
+        color = (70, 130, 180) if self.active else (120, 120, 120)  # Blau oder Grau
+
+        # Wenn die Maus über dem Button ist und er aktiv ist → hellere Farbe (Hover-Effekt)
         if self.rect.collidepoint(mouse) and self.active:
             color = (100, 160, 210)
+
+        # Zeichnet das Rechteck des Buttons in der festgelegten Farbe
         pygame.draw.rect(screen, color, self.rect)
+
+        # Rendert den Text des Buttons als weiße Schrift
         text_surface = FONT.render(self.text, True, (255, 255, 255))
+
+        # Blittet (zeichnet) den Text auf das Rechteck, leicht eingerückt
         screen.blit(text_surface, (self.rect.x + 10, self.rect.y + 10))
 
     def handle_event(self, event):
+        # Reagiert auf Mausereignisse
+
+        # Nur reagieren, wenn der Button aktiv ist UND ein Mausklick erfolgt ist (linke Maustaste)
         if self.active and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            # Prüft, ob der Klick innerhalb des Rechtecks war
             if self.rect.collidepoint(pygame.mouse.get_pos()):
+                # Wenn eine Aktion angegeben wurde, führe sie aus
                 if self.action:
                     self.action()
-
 
 
 
@@ -411,14 +429,16 @@ def run_me():
         screen.fill((0, 120, 0))
 
         # Event-Handling zentral
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-                
-            restart_button.handle_event(event)
-            for btn in buttons:
-                btn.handle_event(event)
+        for event in pygame.event.get():            # Hole alle aktuellen Pygame-Ereignisse (z. B. Maus, Tastatur, Fenster)
+            if event.type == pygame.QUIT:           # Prüfe, ob das Ereignis ein Fenster-Schließen-Befehl ist
+                pygame.quit()                        # Beende Pygame sauber, schließe alle Fenster und Ressourcen
+                sys.exit()                          # Beende das gesamte Programm (Python-Prozess)
+    
+        restart_button.handle_event(event)      # Übergib das Ereignis an den Neustart-Button, damit er auf Klicks reagieren kann
+    
+        for btn in buttons:                      # Für jeden Button in der Liste von Buttons
+            btn.handle_event(event)             # Übergib das Ereignis an den Button, damit er sich selbst auf Klick prüft
+
 
         # Dealer-Karten offen anzeigen
         if not dealer_zeigt_zweite_karte:
